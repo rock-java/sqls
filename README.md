@@ -1,5 +1,5 @@
 # jsql
-Map Sql to java object using asm.
+Map sql to java object using asm.
 
 ## coming sonn!
 
