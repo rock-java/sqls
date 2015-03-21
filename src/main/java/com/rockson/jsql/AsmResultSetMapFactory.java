@@ -6,11 +6,15 @@ import java.beans.PropertyDescriptor;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.net.URL;
+import java.sql.Array;
 import java.sql.Blob;
+import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.DriverManager;
+import java.sql.Ref;
 import java.sql.ResultSet;
+import java.sql.RowId;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Time;
@@ -104,13 +108,18 @@ public class AsmResultSetMapFactory implements ResultSetMapFactory {
 				if (null == writeMethod) {
 					continue;
 				}
-				String[] ngs = fetchMethodName(p.getPropertyType(), writeMethod.getAnnotation(DbField.class));
+				DbField dbField = clazz.getDeclaredField(p.getName()).getAnnotation(DbField.class);
+				if(null == dbField) {
+					dbField =  writeMethod.getAnnotation(DbField.class);
+				}
+				System.out.println(p.getName() + " "+dbField);
+				String[] ngs = fetchMethodName(p.getPropertyType(),dbField);
 				if(null == ngs) {
 					continue;
 				}
 				mvMap.visitVarInsn(ALOAD, 4); // get bean
 				mvMap.visitVarInsn(ALOAD, 1); // get resultSet
-				mvMap.visitLdcInsn(p.getName());
+				mvMap.visitLdcInsn((null!=dbField&&null!=dbField.value()?dbField.value():p.getName()));
 				System.out.println("resultSet." + ngs[0] + "(\"" + p.getName() + "\") " + ngs[1]);
 				// resultSet.getType("filed")
 				mvMap.visitMethodInsn(INVOKEINTERFACE, "java/sql/ResultSet", ngs[0], ngs[1], true);
@@ -125,7 +134,7 @@ public class AsmResultSetMapFactory implements ResultSetMapFactory {
 			// boolean linkedlist.add(bean)
 			mvMap.visitMethodInsn(INVOKEVIRTUAL, "java/util/LinkedList", "add", "(Ljava/lang/Object;)Z", false);
 			mvMap.visitInsn(POP);
-		} catch (IntrospectionException e) {
+		} catch (IntrospectionException | NoSuchFieldException | SecurityException e) {
 			throw new BuilderException(e);
 		}
 
@@ -159,15 +168,6 @@ public class AsmResultSetMapFactory implements ResultSetMapFactory {
 	// }
 	
 
-	public static void main(String[] args) throws SQLException  {
-		Connection connection = DriverManager.getConnection("jdbc:mysql://192.168.13.183/cad", "root", "yzkj2014");
-		Statement statement = connection.createStatement();
-		ResultSet resultSet = statement.executeQuery("select 1 as id , 'name' as name");
-		List<User> us = ResultSetMapProxy.instance.map(resultSet, User.class);
-		statement.close();
-		connection.close();
-		System.out.println(us);
-	}
 
 	/**
 	 * 
@@ -177,10 +177,11 @@ public class AsmResultSetMapFactory implements ResultSetMapFactory {
 	 */
 	public String[] fetchMethodName(Class<?> clazz, DbField dbField) {
 		try {
-			ResultSet r;
-			// String dbType = dbField.type();
-			if(null!=dbField) { // NCHAR,NVARCHAR and LONGNVARCHAR 
-				if("NCHAR".equalsIgnoreCase(dbField.type())||"NVARCHAR".equalsIgnoreCase(dbField.type())||"LONGNVARCHAR".equalsIgnoreCase(dbField.type())) {
+			if(null!=dbField) {
+				if(dbField.ignore()){
+					return null;
+				}
+				if(DbExtraTypes.NCHAR==dbField.type()||DbExtraTypes.NVARCHAR ==dbField.type()||DbExtraTypes.LONGNVARCHAR==dbField.type()) {
 					return new String[] { "getNString",
 							Type.getMethodDescriptor(ResultSet.class.getMethod("getNString", String.class)), "(Ljava/lang/String;)V" };
 				}
@@ -218,6 +219,7 @@ public class AsmResultSetMapFactory implements ResultSetMapFactory {
 						Type.getMethodDescriptor(ResultSet.class.getMethod("getString", String.class)),
 						"(Ljava/lang/String;)V" };
 			}
+			
 			if (Date.class.equals(clazz)) {
 				return new String[] { "getDate",
 						Type.getMethodDescriptor(ResultSet.class.getMethod("getDate", String.class)),
@@ -233,7 +235,12 @@ public class AsmResultSetMapFactory implements ResultSetMapFactory {
 						Type.getMethodDescriptor(ResultSet.class.getMethod("getTimestamp", String.class)),
 						"(Ljava/sql/Timestamp;)V" };
 			}
-			if (BigDecimal.class.isAssignableFrom(clazz)) {
+			if (java.util.Date.class.equals(clazz)) {
+				return new String[] { "getDate",
+						Type.getMethodDescriptor(ResultSet.class.getMethod("getDate", String.class)),
+						"(Ljava/util/Date;)V" };
+			}
+			if (BigDecimal.class.equals(clazz)) {
 				return new String[] { "getBigDecimal",
 						Type.getMethodDescriptor(ResultSet.class.getMethod("getBigDecimal", String.class)),
 						"(Ljava/math/BigDecimal;)V" };
@@ -246,11 +253,32 @@ public class AsmResultSetMapFactory implements ResultSetMapFactory {
 				return new String[] { "getURL",
 						Type.getMethodDescriptor(ResultSet.class.getMethod("getURL", String.class)), "(Ljava/net/URL)V" };
 			}
-			if (Blob.class.isAssignableFrom(clazz)) {
+			if (Blob.class.equals(clazz)) {
 				return new String[] { "getBlob",
 						Type.getMethodDescriptor(ResultSet.class.getMethod("getBlob", String.class)),
 						"(Ljava/sql/Blob)V" };
 			}
+			if (Clob.class.equals(clazz)) {
+				return new String[] { "getClob",
+						Type.getMethodDescriptor(ResultSet.class.getMethod("getClob", String.class)),
+						"(Ljava/sql/Clob)V" };
+			}
+			if (RowId.class.equals(clazz)) {
+				return new String[] { "getRowId",
+						Type.getMethodDescriptor(ResultSet.class.getMethod("getRowId", String.class)),
+						"(Ljava/sql/RowId)V" };
+			}
+			if (Ref.class.equals(clazz)) {
+				return new String[] { "getRef",
+						Type.getMethodDescriptor(ResultSet.class.getMethod("getRef", String.class)),
+						"(Ljava/sql/Ref)V" };
+			}
+			if (Array.class.equals(clazz)) {
+				return new String[] { "getArray",
+						Type.getMethodDescriptor(ResultSet.class.getMethod("getArray", String.class)),
+						"(Ljava/sql/Array)V" };
+			}
+			
 
 			return null;
 		} catch (NoSuchMethodException | SecurityException e) {

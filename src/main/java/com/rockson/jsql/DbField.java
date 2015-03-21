@@ -9,5 +9,6 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface DbField {
 	String value() default "";
-	String type() default "";
+	DbExtraTypes type() default DbExtraTypes.NULL;
+	boolean ignore() default false;
 }
