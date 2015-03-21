@@ -7,28 +7,29 @@ import java.util.List;
 import java.util.Map;
 
 public class ResultSetMapProxy {
-	private Map<String, ResultSetMap<?>> mappers = new HashMap<String, ResultSetMap<?>>(); 
-	private ResultSetMapFactory resultSetMapFactory = new  AsmResultSetMapFactory();
-	
+	private Map<String, ResultSetMap<?>> mappers = new HashMap<String, ResultSetMap<?>>();
+	private ResultSetMapFactory resultSetMapFactory = new AsmResultSetMapFactory();
+
 	public static final ResultSetMapProxy instance = new ResultSetMapProxy();
-	
-	public <B> List<B> map(ResultSet resultSet , Class<B> clazz) throws SQLException {
+
+	public <B> List<B> map(ResultSet resultSet, Class<B> clazz) throws SQLException {
 		String className = clazz.getName();
-		ResultSetMap<B> map = (ResultSetMap<B>) mappers.get(className);
-		if(null == map) {
-			map = resultSetMapFactory.build(clazz);
-			mappers.put(className, map);
+		ResultSetMap<B> mapper = (ResultSetMap<B>) mappers.get(className);
+		if (null == mapper) {
+			mapper = resultSetMapFactory.build(clazz);
+			mappers.put(className, mapper);
 		}
-		return map.map(resultSet, clazz);
+		return mapper.map(resultSet, clazz);
 	}
-//	<B> B mapOne(ResultSet resultSet , Class<B> clazz) throws Exception{
-//		String className = clazz.getName();
-//		ResultSetMap<B> map = (ResultSetMap<B>) mappers.get(className);
-//		if(null == map) {
-//			map = resultSetMapFactory.build(clazz);
-//			mappers.put(className, map);
-//		}
-//		return map.mapOne(resultSet, clazz);
-//	}
-	
+
+	<B> B mapOne(ResultSet resultSet, Class<B> clazz) throws SQLException {
+		String className = clazz.getName();
+		ResultSetMap<B> mapper = (ResultSetMap<B>) mappers.get(className);
+		if (null == mapper) {
+			mapper = resultSetMapFactory.build(clazz);
+			mappers.put(className, mapper);
+		}
+		return mapper.mapOne(resultSet, clazz);
+	}
+
 }

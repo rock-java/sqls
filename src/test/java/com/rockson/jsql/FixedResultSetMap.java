@@ -9,7 +9,7 @@ import com.rockson.jsql.test.bean.Bean;
 import com.sun.xml.internal.ws.org.objectweb.asm.Type;
 
 public class FixedResultSetMap implements ResultSetMap<Bean> {
-	
+
 	public static void main(String[] args) {
 		System.out.println(Type.getMethodDescriptor(FixedResultSetMap.class.getMethods()[1]));
 	}
@@ -22,7 +22,7 @@ public class FixedResultSetMap implements ResultSetMap<Bean> {
 			while (resultSet.next()) {
 				bean = new Bean();
 				bean.setI(resultSet.getInt("i"));
-//				user.setName(resultSet.getString("name"));
+				// user.setName(resultSet.getString("name"));
 				result.add(bean);
 			}
 			return result;
@@ -32,21 +32,16 @@ public class FixedResultSetMap implements ResultSetMap<Bean> {
 		}
 	}
 
-//	@Override
-//	public User mapOne(ResultSet resultSet, Class<User> clazz) throws SQLException {
-//		try {
-//			User user = null;
-//			while (resultSet.next()) {
-//				user = new User();
-//				user.setId(resultSet.getInt("id"));
-//				user.setName(resultSet.getString("name"));
-//			}
-//			resultSet.close();
-//			return user;
-//		} finally {
-//			resultSet.close();
-//
-//		}
-//	}
+	@Override
+	public Bean mapOne(ResultSet resultSet, Class<Bean> clazz) throws SQLException {
+		Bean bean = null;
+		if (resultSet.next()) {
+			bean = new Bean();
+			bean.setI(resultSet.getInt("id"));
+		}
+		resultSet.close();
+		return bean;
+
+	}
 
 }

@@ -3,6 +3,7 @@ package com.rockson.jsql.test.bean;
 import java.sql.Date;
 import java.sql.Time;
 import java.sql.Timestamp;
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 
 import jdk.nashorn.internal.ir.annotations.Ignore;
@@ -37,7 +38,7 @@ public class Bean {
 	
 	@Override
 	public String toString() {
-		SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		 DateFormat format2 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		return String.format("b:%b,s:%d,i:%d,l:%d,f:%f,d:%f,str:%s,date:%s,t:%s,dt:%s,ts:%s,ud:%s\r", b ,s , i ,l,f,d,str,date,time,datetime,timestamp , utilDate);
 	}
 

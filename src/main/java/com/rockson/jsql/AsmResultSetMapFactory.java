@@ -38,8 +38,6 @@ public class AsmResultSetMapFactory implements ResultSetMapFactory {
 			if (0 != name.indexOf(Type.getInternalName(ResultSetMap.class) + "_")) {
 				return super.loadClass(name);
 			} else {
-				System.out.println(name);
-				System.out.println(getBeanName(name));
 				Class<?> beanClass = Class.forName(getBeanName(name));
 				byte[] bs;
 				bs = genClass(beanClass);
@@ -50,7 +48,7 @@ public class AsmResultSetMapFactory implements ResultSetMapFactory {
 	};
 
 	@Override
-	public <B> ResultSetMap<B> build(Class<B> clazz)  {
+	public <B> ResultSetMap<B> build(Class<B> clazz) {
 		try {
 			return (ResultSetMap<B>) classLoader.loadClass(genClassName(clazz)).newInstance();
 		} catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
@@ -59,31 +57,44 @@ public class AsmResultSetMapFactory implements ResultSetMapFactory {
 	}
 
 	protected <B> byte[] genClass(Class<B> clazz) {
-		String beanInternalName = Type.getInternalName(clazz);
-		String beanDesc = "L" + beanInternalName + ";";
+		// String beanInternalName = Type.getInternalName(clazz);
+		// String beanDesc = "L" + beanInternalName + ";";
+		// String className = genClassName(clazz);
+		// String signature = "Ljava/lang/Object;Lcom/rockson/jsql/ResultSetMap<L" + Type.getInternalName(clazz) +
+		// ";>;";
 		ClassWriter cw = new ClassWriter(0);
-		String className = genClassName(clazz);
-		String signature = "Ljava/lang/Object;Lcom/rockson/jsql/ResultSetMap<" + beanDesc + ">;";
-		System.out.println("gen class " + className);
-		System.out.println("mapper sig " + signature);
-		cw.visit(V1_5, ACC_PUBLIC, className, signature, "java/lang/Object",
-				new String[] { Type.getInternalName(ResultSetMap.class) });
+		cw.visit(V1_5, ACC_PUBLIC, genClassName(clazz),
+				"Ljava/lang/Object;Lcom/rockson/jsql/ResultSetMap<L" + Type.getInternalName(clazz) + ";>;",
+				"java/lang/Object", new String[] { Type.getInternalName(ResultSetMap.class) });
+		genConstructor(cw);
+		genMapMethod(cw, clazz);
+		genMapOneMethod(cw, clazz);
+		return cw.toByteArray();
+	}
+
+	private void genConstructor(ClassWriter cw) {
 		MethodVisitor mvInit = cw.visitMethod(ACC_PUBLIC, "<init>", "()V", null, null);
 		mvInit.visitIntInsn(ALOAD, 0);
 		mvInit.visitMethodInsn(INVOKESPECIAL, "java/lang/Object", "<init>", "()V", false);
 		mvInit.visitInsn(RETURN);
 		mvInit.visitMaxs(1, 1);
 		mvInit.visitEnd();
+	}
 
-		// List<Bean> map(ResultSet resultSet , Class<Bean> clazz)throws SQLException;
-		MethodVisitor mvMap = cw
-				.visitMethod(
-						ACC_PUBLIC,
-						"map",
-						"(Ljava/sql/ResultSet;Ljava/lang/Class;)Ljava/util/List;",
-						"(Ljava/sql/ResultSet;Ljava/lang/Class<Lcom/rockson/jsql/User;>;)Ljava/util/List<Lcom/rockson/jsql/User;>;",
-						new String[] { Type.getInternalName(SQLException.class) });
-		mvMap.visitCode();
+	/**
+	 * List<Bean> map(ResultSet resultSet , Class<Bean> clazz)throws SQLException;
+	 * 
+	 * @param cw
+	 * @param clazz
+	 */
+	private <B> void genMapMethod(ClassWriter cw, Class<B> clazz) {
+		String beanInternalName = Type.getInternalName(clazz);
+
+		MethodVisitor mvMap = cw.visitMethod(ACC_PUBLIC, "map",
+				"(Ljava/sql/ResultSet;Ljava/lang/Class;)Ljava/util/List;", "(Ljava/sql/ResultSet;Ljava/lang/Class<L"
+						+ beanInternalName + ";>;)Ljava/util/List<L" + beanInternalName + ";>;",
+				new String[] { Type.getInternalName(SQLException.class) });
+		// mvMap.visitCode();
 		// result = new LinkedList()
 		mvMap.visitTypeInsn(NEW, "java/util/LinkedList");
 		mvMap.visitInsn(DUP);
@@ -109,24 +120,19 @@ public class AsmResultSetMapFactory implements ResultSetMapFactory {
 					continue;
 				}
 				DbField dbField = clazz.getDeclaredField(p.getName()).getAnnotation(DbField.class);
-				if(null == dbField) {
-					dbField =  writeMethod.getAnnotation(DbField.class);
+				if (null == dbField) {
+					dbField = writeMethod.getAnnotation(DbField.class);
 				}
-				System.out.println(p.getName() + " "+dbField);
-				String[] ngs = fetchMethodName(p.getPropertyType(),dbField);
-				if(null == ngs) {
+				String[] ngs = fetchMethodName(p.getPropertyType(), dbField);
+				if (null == ngs) {
 					continue;
 				}
 				mvMap.visitVarInsn(ALOAD, 4); // get bean
 				mvMap.visitVarInsn(ALOAD, 1); // get resultSet
-				mvMap.visitLdcInsn((null!=dbField&&null!=dbField.value()?dbField.value():p.getName()));
-				System.out.println("resultSet." + ngs[0] + "(\"" + p.getName() + "\") " + ngs[1]);
+				mvMap.visitLdcInsn((null != dbField && null != dbField.value() ? dbField.value() : p.getName()));
 				// resultSet.getType("filed")
 				mvMap.visitMethodInsn(INVOKEINTERFACE, "java/sql/ResultSet", ngs[0], ngs[1], true);
-
-				System.out.println(Arrays.toString(ngs));
 				// bean.setxxx(value);
-				System.out.println("set " + writeMethod.getName());
 				mvMap.visitMethodInsn(INVOKEVIRTUAL, beanInternalName, writeMethod.getName(), ngs[2], false);
 			}
 			mvMap.visitVarInsn(ALOAD, 3); // linkedlist
@@ -151,7 +157,71 @@ public class AsmResultSetMapFactory implements ResultSetMapFactory {
 		mvMap.visitInsn(ARETURN);
 		mvMap.visitMaxs(3, 5);
 		mvMap.visitEnd();
-		return cw.toByteArray();
+	}
+
+	/**
+	 * Bean mapOne(ResultSet resultSet , Class<Bean> clazz)throws SQLException;
+	 * 
+	 * @param cw
+	 * @param clazz
+	 */
+	private <B> void genMapOneMethod(ClassWriter cw, Class<B> clazz) {
+		String beanInternalName = Type.getInternalName(clazz);
+		MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "mapOne",
+				"(Ljava/sql/ResultSet;Ljava/lang/Class;)Ljava/lang/Object;", "(Ljava/sql/ResultSet;Ljava/lang/Class<L"
+						+ beanInternalName + ";>;)L" + beanInternalName + ";",
+				new String[] { Type.getInternalName(SQLException.class) });
+		mv.visitCode();
+		Label noBeanLabel = new Label();
+		// bean=null
+		mv.visitInsn(ACONST_NULL);
+		mv.visitVarInsn(ASTORE, 3);
+
+		mv.visitVarInsn(ALOAD, 1);
+		mv.visitMethodInsn(INVOKEINTERFACE, "java/sql/ResultSet", "next", "()Z", true);
+		mv.visitJumpInsn(IFEQ, noBeanLabel);
+
+		// bean=new Bean();
+		mv.visitTypeInsn(NEW, beanInternalName);
+		mv.visitInsn(DUP);
+		mv.visitMethodInsn(INVOKESPECIAL, beanInternalName, "<init>", "()V", false);
+		mv.visitVarInsn(ASTORE, 3);
+		try {
+			for (PropertyDescriptor p : Introspector.getBeanInfo(clazz).getPropertyDescriptors()) {
+				Method writeMethod = p.getWriteMethod();
+				if (null == writeMethod) {
+					continue;
+				}
+				DbField dbField = clazz.getDeclaredField(p.getName()).getAnnotation(DbField.class);
+				if (null == dbField) {
+					dbField = writeMethod.getAnnotation(DbField.class);
+				}
+				String[] ngs = fetchMethodName(p.getPropertyType(), dbField);
+				if (null == ngs) {
+					continue;
+				}
+				mv.visitVarInsn(ALOAD, 3);
+				mv.visitVarInsn(ALOAD, 1); // get resultSet
+				mv.visitLdcInsn((null != dbField && null != dbField.value() ? dbField.value() : p.getName()));
+				// resultSet.getType("filed")
+				mv.visitMethodInsn(INVOKEINTERFACE, "java/sql/ResultSet", ngs[0], ngs[1], true);
+				// bean.setxxx(value);
+				mv.visitMethodInsn(INVOKEVIRTUAL, beanInternalName, writeMethod.getName(), ngs[2], false);
+			}
+		} catch (IntrospectionException | NoSuchFieldException | SecurityException e) {
+			throw new BuilderException(e);
+		}
+
+		mv.visitLabel(noBeanLabel);
+
+		mv.visitVarInsn(ALOAD, 1);
+		mv.visitMethodInsn(INVOKEINTERFACE, "java/sql/ResultSet", "close", "()V", true);
+
+		mv.visitVarInsn(ALOAD, 3);
+		mv.visitInsn(ARETURN);
+		mv.visitMaxs(4, 4);
+		mv.visitEnd();
+
 	}
 
 	public static String getBeanName(String fname) {
@@ -166,8 +236,6 @@ public class AsmResultSetMapFactory implements ResultSetMapFactory {
 	// return
 	// Type.getInternalName(ResultSetMap.class)+"_"+className.replace('.', '_');
 	// }
-	
-
 
 	/**
 	 * 
@@ -177,13 +245,15 @@ public class AsmResultSetMapFactory implements ResultSetMapFactory {
 	 */
 	public String[] fetchMethodName(Class<?> clazz, DbField dbField) {
 		try {
-			if(null!=dbField) {
-				if(dbField.ignore()){
+			if (null != dbField) {
+				if (dbField.ignore()) {
 					return null;
 				}
-				if(DbExtraTypes.NCHAR==dbField.type()||DbExtraTypes.NVARCHAR ==dbField.type()||DbExtraTypes.LONGNVARCHAR==dbField.type()) {
+				if (DbExtraTypes.NCHAR == dbField.type() || DbExtraTypes.NVARCHAR == dbField.type()
+						|| DbExtraTypes.LONGNVARCHAR == dbField.type()) {
 					return new String[] { "getNString",
-							Type.getMethodDescriptor(ResultSet.class.getMethod("getNString", String.class)), "(Ljava/lang/String;)V" };
+							Type.getMethodDescriptor(ResultSet.class.getMethod("getNString", String.class)),
+							"(Ljava/lang/String;)V" };
 				}
 			}
 			if (boolean.class.equals(clazz) || Boolean.class.equals(clazz)) {
@@ -219,7 +289,7 @@ public class AsmResultSetMapFactory implements ResultSetMapFactory {
 						Type.getMethodDescriptor(ResultSet.class.getMethod("getString", String.class)),
 						"(Ljava/lang/String;)V" };
 			}
-			
+
 			if (Date.class.equals(clazz)) {
 				return new String[] { "getDate",
 						Type.getMethodDescriptor(ResultSet.class.getMethod("getDate", String.class)),
@@ -270,15 +340,13 @@ public class AsmResultSetMapFactory implements ResultSetMapFactory {
 			}
 			if (Ref.class.equals(clazz)) {
 				return new String[] { "getRef",
-						Type.getMethodDescriptor(ResultSet.class.getMethod("getRef", String.class)),
-						"(Ljava/sql/Ref)V" };
+						Type.getMethodDescriptor(ResultSet.class.getMethod("getRef", String.class)), "(Ljava/sql/Ref)V" };
 			}
 			if (Array.class.equals(clazz)) {
 				return new String[] { "getArray",
 						Type.getMethodDescriptor(ResultSet.class.getMethod("getArray", String.class)),
 						"(Ljava/sql/Array)V" };
 			}
-			
 
 			return null;
 		} catch (NoSuchMethodException | SecurityException e) {

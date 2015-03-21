@@ -7,21 +7,23 @@ public class BuilderException extends RuntimeException {
 		super();
 	}
 
-	public BuilderException(String arg0, Throwable arg1, boolean arg2, boolean arg3) {
-		super(arg0, arg1, arg2, arg3);
+	public BuilderException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+		super(message, cause, enableSuppression, writableStackTrace);
 	}
 
-	public BuilderException(String arg0, Throwable arg1) {
-		super(arg0, arg1);
+	public BuilderException(String message, Throwable cause) {
+		super(message, cause);
 	}
 
-	public BuilderException(String arg0) {
-		super(arg0);
+	public BuilderException(String message) {
+		super(message);
 	}
 
-	public BuilderException(Throwable arg0) {
-		super(arg0);
+	public BuilderException(Throwable cause) {
+		super(cause);
 	}
+
+
 	
 
 }
