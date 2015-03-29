@@ -1,7 +1,7 @@
 # jsql
 Map sql to java object using asm.
 
-## coming sonn!
+## coming soon!
 
 
 ## Examples:
