@@ -347,6 +347,11 @@ public class AsmResultSetMapFactory implements ResultSetMapFactory {
 						Type.getMethodDescriptor(ResultSet.class.getMethod("getArray", String.class)),
 						"(Ljava/sql/Array)V" };
 			}
+			if (Object.class.equals(clazz)) {
+				return new String[] { "getObject",
+						Type.getMethodDescriptor(ResultSet.class.getMethod("getObject", String.class)),
+						"(Ljava/lang/getObject)V" };
+			}
 
 			return null;
 		} catch (NoSuchMethodException | SecurityException e) {
