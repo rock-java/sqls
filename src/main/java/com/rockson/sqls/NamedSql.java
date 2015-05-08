@@ -15,7 +15,6 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -29,9 +28,9 @@ public class NamedSql {
 	 * @param sql
 	 * @param params
 	 */
-	public NameSqlPair tranlate(String sql , Map<String,Object> params) {
-		return null;
-	}
+//	public NameSqlPair tranlate(String sql , Map<String,Object> params) {
+//		return null;
+//	}
 	
 	public static Pattern pattern = Pattern.compile("\\{([^\\}]+)\\}");
 	
