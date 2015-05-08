@@ -1,4 +1,4 @@
-package com.rockson.jsql;
+package com.rockson.sqls;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -15,6 +15,7 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -34,29 +35,33 @@ public class NamedSql {
 	
 	public static Pattern pattern = Pattern.compile("\\{([^\\}]+)\\}");
 	
-	public ResultSet buildQuery(Connection connection ,String sql , Map<String, ?> params, Map<String, DbType> argsType) throws SQLException {
-		
-		PreparedStatement prepareStatement = build(connection, sql, params, argsType);
-		int limitCount = limitCount(sql);
-		if(-1!=limitCount) {
-			prepareStatement.setFetchSize(limitCount);
+	public <T> T buildQuery(Connection connection ,String sql , Map<String, ?> params, Map<String, DbType> argsType , ResultSetFunction<T> cb) throws SQLException {
+		try(PreparedStatement prepareStatement = build(connection, sql, params, argsType);){
+			int limitCount = limitCount(sql);
+			if(-1!=limitCount) {
+				prepareStatement.setFetchSize(limitCount);
+			}
+			ResultSet resultSet = prepareStatement.executeQuery();
+			T result =  cb.apply(resultSet);
+			resultSet.close();
+			return result;
 		}
-		return  prepareStatement.executeQuery(); 
 	}
 	
 	public int executeUpdate(Connection connection ,String sql , Map<String, ?> params, Map<String, DbType> argsType) throws SQLException {
-		System.out.println(sql +" | "+params);
-		PreparedStatement prepareStatement = build(connection, sql, params, argsType);
-		return prepareStatement.executeUpdate(); 
+		try(PreparedStatement prepareStatement = build(connection, sql, params, argsType);){
+			return prepareStatement.executeUpdate(); 
+		}
 	}
 	
 	public PreparedResult execute(Connection connection ,String sql , Map<String, ?> params, ExecuteConfig executeConfig , Map<String, DbType> argsType) throws SQLException {
-		PreparedStatement prepareStatement = build(connection, sql, params, argsType);
-		boolean executeResult = prepareStatement.execute();
-		if(executeResult) {
-			return new PreparedResult(0 , prepareStatement.getResultSet());
-		}else{
-			return new PreparedResult(1 , prepareStatement.getUpdateCount());
+		try(PreparedStatement prepareStatement = build(connection, sql, params, argsType);){
+			boolean executeResult = prepareStatement.execute();
+			if(executeResult) {
+				return new PreparedResult(0 , prepareStatement.getResultSet());
+			}else{
+				return new PreparedResult(1 , prepareStatement.getUpdateCount());
+			}
 		}
 	}
 	protected static final Pattern LIMIT_COUNT_PATTERN = Pattern.compile("^.*limit\\s+\\d+\\s*,\\s*(\\d+)\\s*$|^.*limit\\s+(\\d+)\\s*$", Pattern.CASE_INSENSITIVE); 

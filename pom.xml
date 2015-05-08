@@ -3,15 +3,16 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>com.rockson</groupId>
-	<artifactId>jsql</artifactId>
+	<artifactId>sqls</artifactId>
 	<version>0.0.1</version>
 	<packaging>jar</packaging>
 
-	<name>jsql</name>
+	<name>sqls</name>
 	<url>http://maven.apache.org</url>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<github.global.server>github</github.global.server>
 	</properties>
 
 	<dependencies>
@@ -33,4 +34,42 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
+	<build>
+		<plugins>
+			<plugin>
+				<artifactId>maven-deploy-plugin</artifactId>
+				<version>2.8.1</version>
+				<configuration>
+					<altDeploymentRepository>internal.repo::default::file://${project.build.directory}/${project.name}</altDeploymentRepository>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>com.github.github</groupId>
+				<artifactId>site-maven-plugin</artifactId>
+				<version>0.11</version>
+				<configuration>
+					<merge>true</merge>
+					<noJekyll>false</noJekyll>
+					<message>Maven artifacts for ${project.version}</message>	<!-- git commit message -->
+					<outputDirectory>${project.build.directory}/${project.name}</outputDirectory>	<!-- matches distribution management repository url above -->
+					<branch>refs/heads/master</branch>							<!-- remote branch name -->
+					<includes>
+						<include>**/*</include>
+					</includes>
+					<repositoryName>mvn-repo</repositoryName>					<!-- github repo name -->
+					<repositoryOwner>rock-java</repositoryOwner>				<!-- github username -->
+				</configuration>
+				<executions>
+					<!-- run site-maven-plugin's 'site' target as part of the build's normal 
+						'deploy' phase -->
+					<execution>
+						<goals>
+							<goal>site</goal>
+						</goals>
+						<phase>deploy</phase>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
 </project>

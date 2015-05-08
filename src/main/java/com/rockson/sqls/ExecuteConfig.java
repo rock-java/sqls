@@ -1,4 +1,4 @@
-package com.rockson.jsql;
+package com.rockson.sqls;
 
 public class ExecuteConfig {
 	int fetchSize;

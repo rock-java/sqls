@@ -1,4 +1,4 @@
-package com.rockson.jsql;
+package com.rockson.sqls;
 
 import java.sql.Connection;
 import java.sql.DriverManager;

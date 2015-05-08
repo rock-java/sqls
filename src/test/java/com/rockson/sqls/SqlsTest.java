@@ -1,4 +1,4 @@
-package com.rockson.jsql;
+package com.rockson.sqls;
 
 import java.sql.Connection;
 import java.sql.Date;
@@ -7,11 +7,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.After;
 import org.junit.AfterClass;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import com.rockson.sqls.Sqls;
 
 public class SqlsTest {
 	public static class Bean{

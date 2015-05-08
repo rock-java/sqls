@@ -1,4 +1,4 @@
-package com.rockson.jsql;
+package com.rockson.sqls;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -12,24 +12,36 @@ public class Sqls {
 		return query(con, sql, params, t, null);
 	}
 	public static <T> List<T> query(Connection con , String sql, Map<String, ?> params ,Class<T> t, Map<String, DbType> argsType) throws SQLException {
-		ResultSet resultSet = NamedSql.instance.buildQuery(con, sql, params, argsType);
-		List<T> beans= ResultSetMapProxy.instance.map(resultSet, t);
-		return beans;
+//		ResultSet resultSet = NamedSql.instance.buildQuery(con, sql, params, argsType);
+//		List<T> beans= ResultSetMapProxy.instance.map(resultSet, t);
+//		return beans;
+		return NamedSql.instance.buildQuery(con, sql, params, argsType, (resultSet)->{
+			return  ResultSetMapProxy.instance.map(resultSet, t);
+		});
 	}
 	public static <T> T queryOne(Connection con , String sql, Map<String, ?> params ,Class<T> t
 			) throws SQLException {
 		return queryOne(con, sql, params, t, null);
 	}
 	public static <T> T queryOne(Connection con , String sql, Map<String, ?> params ,Class<T> t, Map<String, DbType> argsType) throws SQLException {
-		ResultSet resultSet = NamedSql.instance.buildQuery(con, sql, params, argsType);
-		T bean = ResultSetMapProxy.instance.mapOne(resultSet, t);
-		return bean;
+//		ResultSet resultSet = NamedSql.instance.buildQuery(con, sql, params, argsType);
+//		T bean = ResultSetMapProxy.instance.mapOne(resultSet, t);
+//		return bean;
+		return NamedSql.instance.buildQuery(con, sql, params, argsType, (resultSet)->{
+			return  ResultSetMapProxy.instance.mapOne(resultSet, t);
+		});
 	}
 	public static List<Map<String,Object>> query(Connection con , String sql, Map<String, Object> params) throws SQLException {
-		return ResultSetMapProxy.instance.map(NamedSql.instance.buildQuery(con, sql, params ,null) );
+//		return ResultSetMapProxy.instance.map(NamedSql.instance.buildQuery(con, sql, params ,null) );
+		return NamedSql.instance.buildQuery(con, sql, params, null, (resultSet)->{
+			return ResultSetMapProxy.instance.map(resultSet);
+		});
 	}
 	public static Map<String,Object> queryOne(Connection con , String sql, Map<String, Object> params) throws SQLException {
-		return ResultSetMapProxy.instance.mapOne(NamedSql.instance.buildQuery(con, sql, params ,null) );
+		//return ResultSetMapProxy.instance.mapOne(NamedSql.instance.buildQuery(con, sql, params ,null) );
+		return NamedSql.instance.buildQuery(con, sql, params, null, (resultSet)->{
+			return ResultSetMapProxy.instance.mapOne(resultSet);
+		});
 	}
 	public static int execute(Connection con , String sql, Map<String, Object> params, Map<String, DbType> argsType) throws SQLException {
 		return NamedSql.instance.executeUpdate(con, sql, params, argsType);

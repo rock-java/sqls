@@ -1,11 +1,8 @@
-package com.rockson.jsql;
+package com.rockson.sqls;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -49,6 +46,7 @@ public class ResultSetMapProxy {
 			}
 			result.add(record);
 		}
+//		resultSet.close();
 		return result;
 	}
 	
@@ -67,26 +65,26 @@ public class ResultSetMapProxy {
 	
 	
 
-	public <B> List<B> query(Connection connection, String sql, Object params, Class<B> clazz) throws SQLException {
-		PreparedStatement statement = null;
-		try {
-			statement = connection.prepareStatement(sql);
-			return map(statement.executeQuery(sql), clazz);
-		} finally {
-			if (null != statement)
-				statement.close();
-		}
-	}
+//	public <B> List<B> query(Connection connection, String sql, Object params, Class<B> clazz) throws SQLException {
+//		PreparedStatement statement = null;
+//		try {
+//			statement = connection.prepareStatement(sql);
+//			return map(statement.executeQuery(sql), clazz);
+//		} finally {
+//			if (null != statement)
+//				statement.close();
+//		}
+//	}
 
-	public <B> List<B> query(Connection connection, String sql, Class<B> clazz) throws SQLException {
-		Statement statement = null;
-		try {
-			statement = connection.createStatement();
-			return map(statement.executeQuery(sql), clazz);
-		} finally {
-			if (null != statement)
-				statement.close();
-		}
-	}
+//	public <B> List<B> query(Connection connection, String sql, Class<B> clazz) throws SQLException {
+//		Statement statement = null;
+//		try {
+//			statement = connection.createStatement();
+//			return map(statement.executeQuery(sql), clazz);
+//		} finally {
+//			if (null != statement)
+//				statement.close();
+//		}
+//	}
 
 }

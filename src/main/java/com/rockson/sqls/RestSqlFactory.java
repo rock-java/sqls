@@ -1,4 +1,4 @@
-package com.rockson.jsql;
+package com.rockson.sqls;
 
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
@@ -73,7 +73,7 @@ public class RestSqlFactory {
 		StringBuilder sql = new StringBuilder();
 		sql.append("delete from `");
 		sql.append(table);
-		sql.append(" where ");
+		sql.append("` where ");
 		sql.append(makeConditionSql(params));
 		return new ExecuteObject(sql.toString(), params);
 	}

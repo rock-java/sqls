@@ -1,4 +1,4 @@
-package com.rockson.jsql;
+package com.rockson.sqls;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

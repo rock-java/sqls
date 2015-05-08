@@ -1,4 +1,4 @@
-package com.rockson.jsql;
+package com.rockson.sqls;
 
 public class BuilderException extends RuntimeException {
 	private static final long serialVersionUID = -3737628274628940433L;

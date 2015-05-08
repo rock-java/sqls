@@ -1,6 +1,6 @@
-package com.rockson.jsql;
+package com.rockson.sqls;
 
-public class JsqlClassLoader extends ClassLoader {
+public class SqlsClassLoader extends ClassLoader {
 
 	
 	@Override
