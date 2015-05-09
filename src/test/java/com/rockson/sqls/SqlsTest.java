@@ -116,6 +116,11 @@ public class SqlsTest {
 		System.out.println(Sqls.get(con, "test", conditions));
 	}
 	@Test
+	public void testGetString() throws SQLException{
+		HashMap conditions = new HashMap<String , Object>();
+		System.out.println(Sqls.get(con, "test", "id=1"));
+	}
+	@Test
 	public void testPut() throws SQLException{
 		HashMap conditions = new HashMap<String , Object>();
 		HashMap newValues = new HashMap<String , Object>();

@@ -55,10 +55,14 @@ public class RestSqlFactory {
 		sql.append("` set ");
 		sql.append(makeKeyValues(params));
 		sql.append(" where ");
-		sql.append(makeConditionSql(conditionParams));
+		if(conditions instanceof String) {
+			sql.append(conditions);
+		}else{
+			sql.append(makeConditionSql(conditionParams));
+		}
 		Map<String,Object> allParams = new HashMap<String, Object>(params.size()+conditionParams.size());
 		allParams.putAll(params);
-		allParams.putAll(conditionParams);
+		if(null!=conditionParams)allParams.putAll(conditionParams);
 		return new ExecuteObject(sql.toString(), allParams);
 	}
 	/**
@@ -74,7 +78,11 @@ public class RestSqlFactory {
 		sql.append("delete from `");
 		sql.append(table);
 		sql.append("` where ");
-		sql.append(makeConditionSql(params));
+		if(conditions instanceof String) {
+			sql.append(conditions);
+		}else{
+			sql.append(makeConditionSql(params));
+		}
 		return new ExecuteObject(sql.toString(), params);
 	}
 	/**
@@ -96,7 +104,11 @@ public class RestSqlFactory {
 		sql.append(" from ");
 		sql.append(table);
 		sql.append(" where ");
-		sql.append(makeConditionSql(params));
+		if(conditions instanceof String) {
+			sql.append(conditions);
+		}else{
+			sql.append(makeConditionSql(params));
+		}
 		return new ExecuteObject(sql.toString(), params);
 	}
 	
@@ -160,6 +172,9 @@ public class RestSqlFactory {
 	}
 	
 	public static Map<String, Object> beanToMap(Object bean) {
+		if(bean instanceof String) {
+			return null;
+		}
 		if(bean instanceof Map) {
 			return (Map<String, Object>)bean;
 		}
