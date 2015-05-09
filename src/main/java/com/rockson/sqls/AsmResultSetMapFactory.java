@@ -46,7 +46,7 @@ public class AsmResultSetMapFactory implements ResultSetMapFactory {
 
 		public java.lang.Class<?> loadClass(String name) throws ClassNotFoundException {
 			if (0 != name.indexOf(Type.getInternalName(ResultSetMap.class) + "_")) {
-				return super.loadClass(name);
+				return Thread.currentThread().getContextClassLoader().loadClass(name);
 			} else {
 				Class<?> beanClass = Class.forName(getBeanName(name));
 				byte[] bs;
