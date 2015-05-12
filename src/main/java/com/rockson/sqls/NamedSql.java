@@ -103,7 +103,7 @@ public class NamedSql {
 			case NCHAR:
 			case NVARCHAR:
 				preparedStatement.setNString(index, (String) arg);
-				break;
+				return;
 
 			default:
 				break;
@@ -111,60 +111,78 @@ public class NamedSql {
 		}
 		if(null == arg) {
 			preparedStatement.setObject(index , null);
+			return;
 		}
 		if(arg instanceof Boolean || boolean.class.equals(arg.getClass())) {
 			preparedStatement.setBoolean(index, (boolean) arg);
+			return;
 		}
 		if(arg instanceof Character || char.class.equals(arg.getClass())) {
 			preparedStatement.setString(index, arg.toString());
+			return;
 		}
 		if(arg instanceof Byte || byte.class.equals(arg.getClass())) {
 			preparedStatement.setByte(index, (byte) arg);
+			return;
 		}
 		if(arg instanceof Short || short.class.equals(arg.getClass())) {
 			preparedStatement.setShort(index, (short) arg);
+			return;
 		}
 		if(arg instanceof Integer || int.class.equals(arg.getClass())) {
 			preparedStatement.setInt(index, (int) arg);
+			return;
 		}
 		if(arg instanceof Long || long.class.equals(arg.getClass())) {
 			preparedStatement.setLong(index, (long) arg);
+			return;
 		}
 		if(arg instanceof Float || float.class.equals(arg.getClass())) {
 			preparedStatement.setFloat(index, (float) arg);
+			return;
 		}
 		if(arg instanceof Double || double.class.equals(arg.getClass())) {
 			preparedStatement.setDouble(index, (double) arg);
+			return;
 		}
 		if(arg instanceof String) {
 			preparedStatement.setString(index, (String) arg);
+			return;
 		}
 		if(arg instanceof BigInteger) {
 			preparedStatement.setBytes(index, ((BigInteger) arg).toByteArray());
+			return;
 		}
 		if(arg instanceof BigDecimal) {
 			preparedStatement.setBigDecimal(index, (BigDecimal) arg);
 		}
 		if(arg instanceof byte[] ||Byte[].class.equals(arg.getClass())) {
 			preparedStatement.setBytes(index, (byte[])arg);
+			return;
 		}
 		if(arg instanceof Time) {
 			preparedStatement.setTime(index, (Time) arg);
+			return;
 		}
 		if(arg instanceof Date) {
 			preparedStatement.setDate(index, (Date) arg);
+			return;
 		}
 		if(arg instanceof Timestamp) {
 			preparedStatement.setTimestamp(index, (Timestamp) arg);
+			return;
 		}
 		if(arg instanceof Blob) {
 			preparedStatement.setBlob(index, (Blob) arg);
+			return;
 		}
 		if(arg instanceof NClob) {
 			preparedStatement.setNClob(index, (NClob)arg);
+			return;
 		}
 		if(arg instanceof Clob) {
 			preparedStatement.setClob(index, (Clob)arg);
+			return;
 		}
 		
 	}
