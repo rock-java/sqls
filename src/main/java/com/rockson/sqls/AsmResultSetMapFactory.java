@@ -33,6 +33,8 @@ import java.sql.RowId;
 import java.sql.SQLException;
 import java.sql.Time;
 import java.sql.Timestamp;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Label;
@@ -42,15 +44,19 @@ import org.objectweb.asm.Type;
 
 public class AsmResultSetMapFactory implements ResultSetMapFactory {
 
+	static final Set<String> definedClasses = new HashSet<String>();
 	ClassLoader classLoader = new ClassLoader() {
-
 		public java.lang.Class<?> loadClass(String name) throws ClassNotFoundException {
 			if (0 != name.indexOf(Type.getInternalName(ResultSetMap.class) + "_")) {
 				return Thread.currentThread().getContextClassLoader().loadClass(name);
 			} else {
+				if(definedClasses.contains(name)) {
+					return Class.forName(name);
+				}
 				Class<?> beanClass = Class.forName(getBeanName(name));
 				byte[] bs;
 				bs = genClass(beanClass);
+				definedClasses.add(name);
 				return defineClass(name.replace('/', '.'), bs, 0, bs.length);
 			}
 

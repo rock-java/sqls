@@ -5,6 +5,7 @@ import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class RestSqlFactory {
@@ -12,7 +13,7 @@ public class RestSqlFactory {
 	
 	
 	public ExecuteObject postSql(String table , Object object){
-		Map<String,Object> params =	params = beanToMap(object);
+		Map<String,Object> params  = beanToMap(object);
 		if(null == object || null == params) {
 			return null;
 		}
@@ -111,6 +112,9 @@ public class RestSqlFactory {
 		}
 		return new ExecuteObject(sql.toString(), params);
 	}
+	public ExecuteObject getSql(String table, Object conditions, List<String> fields) {
+		return getSql(table, conditions,fields.toArray(new String[]{}));
+	}
 	
 	/**
 	 * 
@@ -193,4 +197,5 @@ public class RestSqlFactory {
 			return null;
 		}
 	}
+	
 }

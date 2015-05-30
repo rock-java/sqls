@@ -1,7 +1,10 @@
 package com.rockson.sqls;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -57,16 +60,16 @@ public class Sqls {
 		ExecuteObject executeObject = RestSqlFactory.instance.getSql(table, conditions, keys);
 		return queryOne(con, executeObject.sql, executeObject.params);
 	}
-	public static <T> T get(Connection con,String table,Object conditions ,Class<T> clazz, String... keys) throws SQLException{
-		ExecuteObject executeObject = RestSqlFactory.instance.getSql(table, conditions, keys);
+	public static <T> T get(Connection con,String table,Object conditions ,Class<T> clazz) throws SQLException{
+		ExecuteObject executeObject = RestSqlFactory.instance.getSql(table, conditions,fields(clazz));
 		return queryOne(con, executeObject.sql, executeObject.params, clazz);
 	}
-	public static List<Map<String, Object>> gets(Connection con,String table,Object conditions , String... keys) throws SQLException{
+	public static List<Map<String, Object>> gets(Connection con,String table,Object conditions, String... keys) throws SQLException{
 		ExecuteObject executeObject = RestSqlFactory.instance.getSql(table, conditions, keys);
 		return query(con, executeObject.sql, executeObject.params);
 	}
-	public static <T> List<T> gets(Connection con,String table,Object conditions ,Class<T> clazz, String... keys) throws SQLException{
-		ExecuteObject executeObject = RestSqlFactory.instance.getSql(table, conditions, keys);
+	public static <T> List<T> gets(Connection con,String table,Object conditions ,Class<T> clazz) throws SQLException{
+		ExecuteObject executeObject = RestSqlFactory.instance.getSql(table, conditions, fields(clazz));
 		return query(con, executeObject.sql, executeObject.params, clazz);
 	}
 	public static int put(Connection con,String table,Object newValues , Object conditions) throws SQLException{
@@ -77,5 +80,19 @@ public class Sqls {
 		ExecuteObject executeObject = RestSqlFactory.instance.deleteSql(table, conditions);
 		return NamedSql.instance.executeUpdate(con, executeObject.sql, executeObject.params, null);
 	}
-	
+	public static List<String> fields(Class<?> clazz) {
+		List<String> result = new LinkedList<String>();
+		DbField dbField;
+		for (Field field : clazz.getDeclaredFields()) {
+			if(Modifier.STATIC == (field.getModifiers() & Modifier.STATIC)){
+				continue;
+			}
+			dbField = field.getAnnotation(DbField.class);
+			if(dbField!=null && !dbField.ignore()) {
+				continue;
+			}
+			result.add(field.getName());
+		}
+		return result;
+	}
 }

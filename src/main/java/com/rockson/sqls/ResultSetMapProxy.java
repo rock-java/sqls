@@ -42,7 +42,7 @@ public class ResultSetMapProxy {
 		while(resultSet.next()) {
 			record = new HashMap<String, Object>();
 			for(int i = 1 ;i <= columnCount;i++){
-				record.put(meta.getColumnName(i), resultSet.getObject(i));
+				record.put(meta.getColumnLabel(i), resultSet.getObject(i));
 			}
 			result.add(record);
 		}
