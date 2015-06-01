@@ -39,6 +39,15 @@ public class Sqls {
 			return ResultSetMapProxy.instance.map(resultSet);
 		});
 	}
+	@SuppressWarnings("unchecked")
+	public static <T> T queryValue(Connection con , String sql, Map<String, Object> params , Class<T> valueType) throws SQLException {
+		return (T) NamedSql.instance.buildQuery(con, sql, params, null, (resultSet)->{
+			if(resultSet.next()) {
+				return resultSet.getObject(1);
+			}
+			return null;
+		});
+	}
 	public static Map<String,Object> queryOne(Connection con , String sql, Map<String, Object> params) throws SQLException {
 		//return ResultSetMapProxy.instance.mapOne(NamedSql.instance.buildQuery(con, sql, params ,null) );
 		return NamedSql.instance.buildQuery(con, sql, params, null, (resultSet)->{
