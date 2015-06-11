@@ -57,7 +57,7 @@ public class ResultSetMapProxy {
 		if(resultSet.next()) {
 			record = new HashMap<String, Object>();
 			for(int i = 1 ;i <= columnCount;i++){
-				record.put(meta.getColumnName(i), resultSet.getObject(i));
+				record.put(meta.getColumnLabel(i), resultSet.getObject(i));
 			}
 		}
 		return record;
