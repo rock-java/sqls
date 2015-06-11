@@ -1,6 +1,25 @@
 # sqls
 Map sql to java object using asm.
 
+## Installation
+```
+<dependency>
+	<groupId>com.rockson</groupId>
+	<artifactId>sqls</artifactId>
+	<version>0.0.4</version>
+</dependency>
+
+<repositories>
+	<repository>
+		<id>servletplus-mvn-repo</id>
+		<url>https://raw.github.com/rock-java/mvn-repo/master</url>
+		<snapshots>
+			<enabled>true</enabled>
+			<updatePolicy>always</updatePolicy>
+		</snapshots>
+	</repository>
+</repositories>
+```
 ## Examples:
 ```java
 public static void main(String[] args) throws SQLException  {
