@@ -65,8 +65,8 @@ public class SqlsTest {
 	public void testQuery() throws SQLException{
 		for(int i = 0 ;i<10;i++){
 		List<Bean> r = Sqls.query(con, "select id,i1,d1 from test", null, Bean.class);
+		System.out.println(r);
 		}
-//		System.out.println(r);
 	}
 	@Test
 	public void testQueryOne() throws SQLException{

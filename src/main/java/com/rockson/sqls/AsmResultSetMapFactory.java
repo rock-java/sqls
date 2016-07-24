@@ -20,6 +20,7 @@ import static org.objectweb.asm.Opcodes.V1_5;
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.net.URL;
@@ -44,19 +45,20 @@ import org.objectweb.asm.Type;
 
 public class AsmResultSetMapFactory implements ResultSetMapFactory {
 
-	static final Set<String> definedClasses = new HashSet<String>();
+//	static final Set<String> definedClasses = new HashSet<String>();
 	ClassLoader classLoader = new ClassLoader() {
 		public java.lang.Class<?> loadClass(String name) throws ClassNotFoundException {
 			if (0 != name.indexOf(Type.getInternalName(ResultSetMap.class) + "_")) {
-				return Thread.currentThread().getContextClassLoader().loadClass(name);
+				return ClassLoader.getSystemClassLoader().loadClass(name);
+//				return Thread.currentThread().getContextClassLoader().loadClass(name);
 			} else {
-				if(definedClasses.contains(name)) {
-					return Class.forName(name);
-				}
+//				if(definedClasses.contains(name)) {
+//					return Class.forName(name);
+//				}
 				Class<?> beanClass = Class.forName(getBeanName(name));
 				byte[] bs;
 				bs = genClass(beanClass);
-				definedClasses.add(name);
+//				definedClasses.add(name);
 				return defineClass(name.replace('/', '.'), bs, 0, bs.length);
 			}
 
@@ -66,8 +68,18 @@ public class AsmResultSetMapFactory implements ResultSetMapFactory {
 	@Override
 	public <B> ResultSetMap<B> build(Class<B> clazz) {
 		try {
-			return (ResultSetMap<B>) classLoader.loadClass(genClassName(clazz)).newInstance();
-		} catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+//			return (ResultSetMap<B>) classLoader.loadClass(genClassName(clazz)).newInstance();
+			byte[] b = genClass(clazz);
+			ClassLoader loader = ClassLoader.getSystemClassLoader();
+			Class<?> cls = Class.forName("java.lang.ClassLoader");
+			java.lang.reflect.Method method = cls.getDeclaredMethod(
+			                "defineClass", new Class[] { String.class, byte[].class,
+			                        int.class, int.class });
+			method.setAccessible(true);
+			Object[] args = new Object[] { genClassName(clazz).replace('/', '.'), b, new Integer(0),
+			                    new Integer(b.length) };
+			return (ResultSetMap<B>) ((Class<?>)method.invoke(loader, args)).newInstance();
+		} catch (Exception e) {
 			throw new BuilderException(e);
 		}
 	}
